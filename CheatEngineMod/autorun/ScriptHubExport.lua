@@ -82,8 +82,16 @@ function ScriptHubExport()
   local outputString = {}
   appendLine(outputString, "{", 0)
   appendLine(outputString, '"classes": {', 1)
+
+  -- Sort class names
+  local sortedClassNames = {}
+  for k in pairs(classes) do
+    table.insert(sortedClassNames, k)
+  end
+  table.sort(sortedClassNames)
+
   local isFirst = true
-  for k,v in pairs(classes) do
+  for _, k in ipairs(sortedClassNames) do
     --print(classes[i].fqname)
     -- Only continue if the class has a valid name note: short circuit eval works in LUA
     if k~=nil and k~='' and k~='<unnamed>' and not string.find(k, "<") then
@@ -225,18 +233,26 @@ function BuildJsonFromFields(classData, fields, parent)
       appendLine(outputString, string.format('"Parent": "%s",', parentName), 3)
     end
     appendLine(outputString, '"fields": {', 3)
-    for j=1, #tempClass.fields do
-      if j > 1 then
+
+    -- Sort fields
+    local sortedFields = {}
+    for j = 1, #tempClass.fields do
+      table.insert(sortedFields, tempClass.fields[j])
+    end
+    table.sort(sortedFields, function(a, b) return a.name < b.name end)
+
+    for _, field in ipairs(sortedFields) do
+      if _ > 1 then
         appendComma(outputString)
       end
-      appendLine(outputString, string.format('"%s": {', tempClass.fields[j].name), 4)
-      appendLine(outputString, string.format('"offset": "%s",', tempClass.fields[j].offset), 5)
-      appendLine(outputString, string.format('"type": "%s",', tempClass.fields[j].typename), 5)
-      appendLine(outputString, string.format('"static": %s', tostring(tempClass.fields[j].isStatic)), 5)
-      if variableValuesTable[tempClass.fqname .. "." .. tempClass.fields[j].name] == 1 then
+      appendLine(outputString, string.format('"%s": {', field.name), 4)
+      appendLine(outputString, string.format('"offset": "%s",', field.offset), 5)
+      appendLine(outputString, string.format('"type": "%s",', field.typename), 5)
+      appendLine(outputString, string.format('"static": %s', tostring(field.isStatic)), 5)
+      if variableValuesTable[tempClass.fqname .. "." .. field.name] == 1 then
         appendComma(outputString)
-        local fieldValue = ScriptHubReadStaticValue(tempClass.fields[j], classData)
-        if tempClass.fields[j].typename == "System.Boolean" then
+        local fieldValue = ScriptHubReadStaticValue(field, classData)
+        if field.typename == "System.Boolean" then
           appendLine(outputString, string.format('"value": %s', tostring(fieldValue)), 5)
         else
           appendLine(outputString, string.format('"value": "%s"', tostring(fieldValue)), 5)
