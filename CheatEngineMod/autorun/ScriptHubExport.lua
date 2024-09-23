@@ -52,6 +52,10 @@ local function indent(level)
   return string.rep("  ", level)
 end
 
+local function appendChar(t, str)
+  t[#t+1] = str .. "\n"
+end
+
 local function appendLine(t, str, indentLevel)
   t[#t+1] = indent(indentLevel) .. str .. "\n"
 end
@@ -224,18 +228,19 @@ function BuildJsonFromFields(classData, fields, parent)
     appendLine(outputString, '"fields": {', 3)
     for j=1, #tempClass.fields do
       if j > 1 then
-        appendLine(outputString, ",", 3)
+        appendChar(outputString, ",")
       end
       appendLine(outputString, string.format('"%s": {', tempClass.fields[j].name), 4)
       appendLine(outputString, string.format('"offset": "%s",', tempClass.fields[j].offset), 5)
       appendLine(outputString, string.format('"type": "%s",', tempClass.fields[j].typename), 5)
       appendLine(outputString, string.format('"static": %s', tostring(tempClass.fields[j].isStatic)), 5)
       if variableValuesTable[tempClass.fqname .. "." .. tempClass.fields[j].name] == 1 then
+        appendChar(outputString, ",")
         local fieldValue = ScriptHubReadStaticValue(tempClass.fields[j], classData)
         if tempClass.fields[j].typename == "System.Boolean" then
-          appendLine(outputString, string.format(',"value": %s', tostring(fieldValue)), 5)
+          appendLine(outputString, string.format('"value": %s', tostring(fieldValue)), 5)
         else
-          appendLine(outputString, string.format(',"value": "%s"', tostring(fieldValue)), 5)
+          appendLine(outputString, string.format('"value": "%s"', tostring(fieldValue)), 5)
         end
       end
       appendLine(outputString, "}", 4)
