@@ -49,7 +49,7 @@ function ScriptHubAddMenuItem()
 end
 
 local function indent(level)
-  return string.rep("  ", level)
+  return string.rep("    ", level)
 end
 
 local function appendChar(t, str)
