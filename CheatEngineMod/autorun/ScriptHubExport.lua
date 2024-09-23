@@ -52,8 +52,8 @@ local function indent(level)
   return string.rep("    ", level)
 end
 
-local function appendChar(t, str)
-  t[#t+1] = str .. "\n"
+local function appendComma(t)
+    t[#t] = t[#t]:sub(1, -2) .. ",\n"
 end
 
 local function appendLine(t, str, indentLevel)
@@ -93,7 +93,7 @@ function ScriptHubExport()
       local currentJSON = BuildJsonFromFields(classData, fields, parent)
       if currentJSON~=nil then
         if not isFirst then
-          appendLine(outputString, ",", 1)
+          appendComma(outputString)
         end
         outputString[#outputString+1] = currentJSON
         isFirst = false
@@ -101,8 +101,7 @@ function ScriptHubExport()
     end
   end
   -- test in case the last classes read was nil/empty/unamed or <> and didn't add a new object as expected
-  appendLine(outputString, "", 0)  -- Add a newline
-  appendLine(outputString, "  }", 1)
+  appendLine(outputString, "}", 1)
   appendLine(outputString, "}", 0)
   local fullJSONOutput = table.concat(outputString)
   -- local current_dir=io.popen"cd":read'*l'.."\\"
@@ -228,14 +227,14 @@ function BuildJsonFromFields(classData, fields, parent)
     appendLine(outputString, '"fields": {', 3)
     for j=1, #tempClass.fields do
       if j > 1 then
-        appendChar(outputString, ",")
+        appendComma(outputString)
       end
       appendLine(outputString, string.format('"%s": {', tempClass.fields[j].name), 4)
       appendLine(outputString, string.format('"offset": "%s",', tempClass.fields[j].offset), 5)
       appendLine(outputString, string.format('"type": "%s",', tempClass.fields[j].typename), 5)
       appendLine(outputString, string.format('"static": %s', tostring(tempClass.fields[j].isStatic)), 5)
       if variableValuesTable[tempClass.fqname .. "." .. tempClass.fields[j].name] == 1 then
-        appendChar(outputString, ",")
+        appendComma(outputString)
         local fieldValue = ScriptHubReadStaticValue(tempClass.fields[j], classData)
         if tempClass.fields[j].typename == "System.Boolean" then
           appendLine(outputString, string.format('"value": %s', tostring(fieldValue)), 5)
